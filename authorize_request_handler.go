@@ -161,7 +161,7 @@ func (f *Fosite) authorizeRequestParametersFromOpenIDConnectRequest(ctx context.
 	return nil
 }
 
-func (f *Fosite) validateAuthorizeRedirectURI(_ *http.Request, request *AuthorizeRequest) error {
+func (f *Fosite) validateAuthorizeRedirectURI(ctx context.Context, request *AuthorizeRequest) error {
 	// Fetch redirect URI from request
 	rawRedirURI := request.Form.Get("redirect_uri")
 
@@ -177,7 +177,7 @@ func (f *Fosite) validateAuthorizeRedirectURI(_ *http.Request, request *Authoriz
 	}
 
 	// Validate redirect uri
-	redirectURI, err := MatchRedirectURIWithClientRedirectURIs(rawRedirURI, request.Client)
+	redirectURI, err := f.matchRedirectURI(ctx, rawRedirURI, request.Client)
 	if err != nil {
 		return err
 	} else if !IsValidRedirectURI(redirectURI) {
@@ -382,7 +382,7 @@ func (f *Fosite) newAuthorizeRequest(ctx context.Context, r *http.Request, isPAR
 		return request, err
 	}
 
-	if err = f.validateAuthorizeRedirectURI(r, request); err != nil {
+	if err = f.validateAuthorizeRedirectURI(ctx, request); err != nil {
 		return request, err
 	}
 

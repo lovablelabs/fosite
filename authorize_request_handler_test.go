@@ -30,6 +30,7 @@ func TestNewAuthorizeRequest(t *testing.T) {
 
 	redir, _ := url.Parse("https://foo.bar/cb")
 	specialCharRedir, _ := url.Parse("web+application://callback")
+	derivedRedir, _ := url.Parse("https://derived.example.com/cb")
 	for k, c := range []struct {
 		desc          string
 		conf          *Fosite
@@ -345,6 +346,55 @@ func TestNewAuthorizeRequest(t *testing.T) {
 					RequestedScope:    []string{"foo", "bar"},
 					RequestedAudience: []string{"https://cloud.ory.sh/api", "https://www.ory.sh/api"},
 				},
+			},
+		},
+		/* redirect_uri admitted by the configured matcher */
+		{
+			desc: "redirect_uri admitted by the configured RedirectURIMatcher",
+			conf: &Fosite{Store: store, Config: &Config{
+				ScopeStrategy:            ExactScopeStrategy,
+				AudienceMatchingStrategy: DefaultAudienceMatchingStrategy,
+				RedirectURIMatcher: func(_ context.Context, redirectURI *url.URL, client Client) bool {
+					return client.GetID() == "1234" && redirectURI.Host == "derived.example.com"
+				},
+			}},
+			query: url.Values{
+				"redirect_uri":  {"https://derived.example.com/cb"},
+				"client_id":     {"1234"},
+				"response_type": {"code"},
+				"state":         {"strong-state"},
+				"scope":         {"foo"},
+			},
+			mock: func() {
+				store.EXPECT().GetClient(gomock.Any(), "1234").Return(&DefaultClient{ID: "1234", RedirectURIs: []string{"https://foo.bar/cb"}, Scopes: []string{"foo"}, ResponseTypes: []string{"code"}}, nil)
+			},
+			expect: &AuthorizeRequest{
+				RedirectURI:   derivedRedir,
+				ResponseTypes: []string{"code"},
+				State:         "strong-state",
+				Request: Request{
+					Client:         &DefaultClient{ID: "1234", RedirectURIs: []string{"https://foo.bar/cb"}, Scopes: []string{"foo"}, ResponseTypes: []string{"code"}},
+					RequestedScope: []string{"foo"},
+				},
+			},
+		},
+		/* redirect_uri refused by the configured matcher falls back to the registered list */
+		{
+			desc: "redirect_uri refused by the configured RedirectURIMatcher and not registered fails",
+			conf: &Fosite{Store: store, Config: &Config{
+				ScopeStrategy:            ExactScopeStrategy,
+				AudienceMatchingStrategy: DefaultAudienceMatchingStrategy,
+				RedirectURIMatcher: func(context.Context, *url.URL, Client) bool {
+					return false
+				},
+			}},
+			query: url.Values{
+				"redirect_uri": {"https://derived.example.com/cb"},
+				"client_id":    {"1234"},
+			},
+			expectedError: ErrInvalidRequest,
+			mock: func() {
+				store.EXPECT().GetClient(gomock.Any(), "1234").Return(&DefaultClient{RedirectURIs: []string{"https://foo.bar/cb"}, Scopes: []string{}}, nil)
 			},
 		},
 		/* fails because unknown response_mode*/

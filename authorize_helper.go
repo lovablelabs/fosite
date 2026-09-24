@@ -215,3 +215,31 @@ func GetPostFormHTMLTemplate(ctx context.Context, f *Fosite) *template.Template 
 	}
 	return DefaultFormPostTemplate
 }
+
+// matchRedirectURI consults the configured RedirectURIMatcher before falling back to
+// MatchRedirectURIWithClientRedirectURIs.
+func (f *Fosite) matchRedirectURI(ctx context.Context, rawurl string, client Client) (*url.URL, error) {
+	if matcher := f.Config.GetRedirectURIMatcher(ctx); matcher != nil && rawurl != "" {
+		if parsed, err := url.Parse(rawurl); err == nil && IsValidRedirectURI(parsed) && matcher(ctx, parsed, client) {
+			return parsed, nil
+		}
+	}
+	return MatchRedirectURIWithClientRedirectURIs(rawurl, client)
+}
+
+// isRedirectURIValid mirrors AuthorizeRequester.IsRedirectURIValid but also accepts redirect URIs
+// admitted by the configured RedirectURIMatcher.
+func (f *Fosite) isRedirectURIValid(ctx context.Context, ar AuthorizeRequester) bool {
+	if ar.IsRedirectURIValid() {
+		return true
+	}
+	matcher := f.Config.GetRedirectURIMatcher(ctx)
+	if matcher == nil {
+		return false
+	}
+	redirectURI := ar.GetRedirectURI()
+	if redirectURI == nil || ar.GetClient() == nil || !IsValidRedirectURI(redirectURI) {
+		return false
+	}
+	return matcher(ctx, redirectURI, ar.GetClient())
+}
