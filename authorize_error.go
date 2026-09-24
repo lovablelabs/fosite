@@ -20,7 +20,7 @@ func (f *Fosite) WriteAuthorizeError(ctx context.Context, rw http.ResponseWriter
 	}
 
 	rfcerr := ErrorToRFC6749Error(err).WithLegacyFormat(f.Config.GetUseLegacyErrorFormat(ctx)).WithExposeDebug(f.Config.GetSendDebugMessagesToClients(ctx)).WithLocalizer(f.Config.GetMessageCatalog(ctx), getLangFromRequester(ar))
-	if !ar.IsRedirectURIValid() {
+	if !f.isRedirectURIValid(ctx, ar) {
 		rw.Header().Set("Content-Type", "application/json;charset=UTF-8")
 
 		js, err := json.Marshal(rfcerr)

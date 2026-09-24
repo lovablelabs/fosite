@@ -98,6 +98,7 @@ type Configurator interface {
 	AudienceStrategyProvider
 	ScopeStrategyProvider
 	RedirectSecureCheckerProvider
+	RedirectURIMatcherProvider
 	OmitRedirectScopeParamProvider
 	SanitationAllowedProvider
 	JWTScopeFieldProvider
