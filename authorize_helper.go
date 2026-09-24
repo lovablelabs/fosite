@@ -226,9 +226,12 @@ func (f *Fosite) matchRedirectURI(ctx context.Context, rawurl string, client Cli
 	return f.Config.GetRedirectURIMatcher(ctx)(ctx, rawurl, client)
 }
 
-// isRedirectURIValid mirrors AuthorizeRequester.IsRedirectURIValid through the configured
-// RedirectURIMatcher.
+// isRedirectURIValid accepts the requester's own verdict, then resolves the redirect URI through the
+// configured RedirectURIMatcher.
 func (f *Fosite) isRedirectURIValid(ctx context.Context, ar AuthorizeRequester) bool {
+	if ar.IsRedirectURIValid() {
+		return true
+	}
 	redirectURI := ar.GetRedirectURI()
 	if redirectURI == nil {
 		return false
