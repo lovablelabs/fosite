@@ -54,7 +54,7 @@ func TestWriteAuthorizeError(t *testing.T) {
 		{
 			err: ErrInvalidGrant,
 			mock: func(rw *MockResponseWriter, req *MockAuthorizeRequester) {
-				req.EXPECT().IsRedirectURIValid().Return(false)
+				req.EXPECT().GetRedirectURI().Return(nil)
 				req.EXPECT().GetResponseMode().Return(ResponseModeDefault)
 				rw.EXPECT().Header().Times(3).Return(header)
 				rw.EXPECT().WriteHeader(http.StatusBadRequest)
@@ -71,8 +71,8 @@ func TestWriteAuthorizeError(t *testing.T) {
 			debug: true,
 			err:   ErrInvalidRequest.WithDebug("with-debug"),
 			mock: func(rw *MockResponseWriter, req *MockAuthorizeRequester) {
-				req.EXPECT().IsRedirectURIValid().Return(true)
-				req.EXPECT().GetRedirectURI().Return(copyUrl(purls[0]))
+				req.EXPECT().GetRedirectURI().AnyTimes().Return(copyUrl(purls[0]))
+				req.EXPECT().GetClient().Return(&DefaultClient{RedirectURIs: []string{purls[0].String()}})
 				req.EXPECT().GetState().Return("foostate")
 				req.EXPECT().GetResponseTypes().AnyTimes().Return(Arguments([]string{"code"}))
 				req.EXPECT().GetResponseMode().Return(ResponseModeQuery).AnyTimes()
@@ -93,8 +93,8 @@ func TestWriteAuthorizeError(t *testing.T) {
 			doNotUseLegacyFormat: true,
 			err:                  ErrInvalidRequest.WithDebug("with-debug"),
 			mock: func(rw *MockResponseWriter, req *MockAuthorizeRequester) {
-				req.EXPECT().IsRedirectURIValid().Return(true)
-				req.EXPECT().GetRedirectURI().Return(copyUrl(purls[0]))
+				req.EXPECT().GetRedirectURI().AnyTimes().Return(copyUrl(purls[0]))
+				req.EXPECT().GetClient().Return(&DefaultClient{RedirectURIs: []string{purls[0].String()}})
 				req.EXPECT().GetState().Return("foostate")
 				req.EXPECT().GetResponseTypes().AnyTimes().Return(Arguments([]string{"code"}))
 				req.EXPECT().GetResponseMode().Return(ResponseModeQuery).AnyTimes()
@@ -114,8 +114,8 @@ func TestWriteAuthorizeError(t *testing.T) {
 			doNotUseLegacyFormat: true,
 			err:                  ErrInvalidRequest.WithDebug("with-debug"),
 			mock: func(rw *MockResponseWriter, req *MockAuthorizeRequester) {
-				req.EXPECT().IsRedirectURIValid().Return(true)
-				req.EXPECT().GetRedirectURI().Return(copyUrl(purls[0]))
+				req.EXPECT().GetRedirectURI().AnyTimes().Return(copyUrl(purls[0]))
+				req.EXPECT().GetClient().Return(&DefaultClient{RedirectURIs: []string{purls[0].String()}})
 				req.EXPECT().GetState().Return("foostate")
 				req.EXPECT().GetResponseTypes().AnyTimes().Return(Arguments([]string{"code"}))
 				req.EXPECT().GetResponseMode().Return(ResponseModeQuery).AnyTimes()
@@ -134,8 +134,8 @@ func TestWriteAuthorizeError(t *testing.T) {
 		{
 			err: ErrInvalidRequest.WithDebug("with-debug"),
 			mock: func(rw *MockResponseWriter, req *MockAuthorizeRequester) {
-				req.EXPECT().IsRedirectURIValid().Return(true)
-				req.EXPECT().GetRedirectURI().Return(copyUrl(purls[0]))
+				req.EXPECT().GetRedirectURI().AnyTimes().Return(copyUrl(purls[0]))
+				req.EXPECT().GetClient().Return(&DefaultClient{RedirectURIs: []string{purls[0].String()}})
 				req.EXPECT().GetState().Return("foostate")
 				req.EXPECT().GetResponseTypes().AnyTimes().Return(Arguments([]string{"code"}))
 				req.EXPECT().GetResponseMode().Return(ResponseModeDefault).AnyTimes()
@@ -154,8 +154,8 @@ func TestWriteAuthorizeError(t *testing.T) {
 		{
 			err: ErrInvalidRequest,
 			mock: func(rw *MockResponseWriter, req *MockAuthorizeRequester) {
-				req.EXPECT().IsRedirectURIValid().Return(true)
-				req.EXPECT().GetRedirectURI().Return(copyUrl(purls[1]))
+				req.EXPECT().GetRedirectURI().AnyTimes().Return(copyUrl(purls[1]))
+				req.EXPECT().GetClient().Return(&DefaultClient{RedirectURIs: []string{purls[1].String()}})
 				req.EXPECT().GetState().Return("foostate")
 				req.EXPECT().GetResponseTypes().AnyTimes().Return(Arguments([]string{"code"}))
 				req.EXPECT().GetResponseMode().Return(ResponseModeQuery).AnyTimes()
@@ -174,8 +174,8 @@ func TestWriteAuthorizeError(t *testing.T) {
 		{
 			err: ErrUnsupportedGrantType,
 			mock: func(rw *MockResponseWriter, req *MockAuthorizeRequester) {
-				req.EXPECT().IsRedirectURIValid().Return(true)
-				req.EXPECT().GetRedirectURI().Return(copyUrl(purls[1]))
+				req.EXPECT().GetRedirectURI().AnyTimes().Return(copyUrl(purls[1]))
+				req.EXPECT().GetClient().Return(&DefaultClient{RedirectURIs: []string{purls[1].String()}})
 				req.EXPECT().GetState().Return("foostate")
 				req.EXPECT().GetResponseTypes().AnyTimes().Return(Arguments([]string{"foobar"}))
 				req.EXPECT().GetResponseMode().Return(ResponseModeFragment).AnyTimes()
@@ -194,8 +194,8 @@ func TestWriteAuthorizeError(t *testing.T) {
 		{
 			err: ErrInvalidRequest,
 			mock: func(rw *MockResponseWriter, req *MockAuthorizeRequester) {
-				req.EXPECT().IsRedirectURIValid().Return(true)
-				req.EXPECT().GetRedirectURI().Return(copyUrl(purls[0]))
+				req.EXPECT().GetRedirectURI().AnyTimes().Return(copyUrl(purls[0]))
+				req.EXPECT().GetClient().Return(&DefaultClient{RedirectURIs: []string{purls[0].String()}})
 				req.EXPECT().GetState().Return("foostate")
 				req.EXPECT().GetResponseTypes().AnyTimes().Return(Arguments([]string{"token"}))
 				req.EXPECT().GetResponseMode().Return(ResponseModeFragment).AnyTimes()
@@ -214,8 +214,8 @@ func TestWriteAuthorizeError(t *testing.T) {
 		{
 			err: ErrInvalidRequest,
 			mock: func(rw *MockResponseWriter, req *MockAuthorizeRequester) {
-				req.EXPECT().IsRedirectURIValid().Return(true)
-				req.EXPECT().GetRedirectURI().Return(copyUrl(purls[1]))
+				req.EXPECT().GetRedirectURI().AnyTimes().Return(copyUrl(purls[1]))
+				req.EXPECT().GetClient().Return(&DefaultClient{RedirectURIs: []string{purls[1].String()}})
 				req.EXPECT().GetState().Return("foostate")
 				req.EXPECT().GetResponseTypes().AnyTimes().Return(Arguments([]string{"token"}))
 				req.EXPECT().GetResponseMode().Return(ResponseModeFragment).AnyTimes()
@@ -234,8 +234,8 @@ func TestWriteAuthorizeError(t *testing.T) {
 		{
 			err: ErrInvalidRequest.WithDebug("with-debug"),
 			mock: func(rw *MockResponseWriter, req *MockAuthorizeRequester) {
-				req.EXPECT().IsRedirectURIValid().Return(true)
-				req.EXPECT().GetRedirectURI().Return(copyUrl(purls[0]))
+				req.EXPECT().GetRedirectURI().AnyTimes().Return(copyUrl(purls[0]))
+				req.EXPECT().GetClient().Return(&DefaultClient{RedirectURIs: []string{purls[0].String()}})
 				req.EXPECT().GetState().Return("foostate")
 				req.EXPECT().GetResponseTypes().AnyTimes().Return(Arguments([]string{"code", "token"}))
 				req.EXPECT().GetResponseMode().Return(ResponseModeFragment).AnyTimes()
@@ -255,8 +255,8 @@ func TestWriteAuthorizeError(t *testing.T) {
 			err:   ErrInvalidRequest.WithDebug("with-debug"),
 			debug: true,
 			mock: func(rw *MockResponseWriter, req *MockAuthorizeRequester) {
-				req.EXPECT().IsRedirectURIValid().Return(true)
-				req.EXPECT().GetRedirectURI().Return(copyUrl(purls[0]))
+				req.EXPECT().GetRedirectURI().AnyTimes().Return(copyUrl(purls[0]))
+				req.EXPECT().GetClient().Return(&DefaultClient{RedirectURIs: []string{purls[0].String()}})
 				req.EXPECT().GetState().Return("foostate")
 				req.EXPECT().GetResponseTypes().AnyTimes().Return(Arguments([]string{"code", "token"}))
 				req.EXPECT().GetResponseMode().Return(ResponseModeFragment).AnyTimes()
@@ -277,8 +277,8 @@ func TestWriteAuthorizeError(t *testing.T) {
 			debug:                true,
 			doNotUseLegacyFormat: true,
 			mock: func(rw *MockResponseWriter, req *MockAuthorizeRequester) {
-				req.EXPECT().IsRedirectURIValid().Return(true)
-				req.EXPECT().GetRedirectURI().Return(copyUrl(purls[0]))
+				req.EXPECT().GetRedirectURI().AnyTimes().Return(copyUrl(purls[0]))
+				req.EXPECT().GetClient().Return(&DefaultClient{RedirectURIs: []string{purls[0].String()}})
 				req.EXPECT().GetState().Return("foostate")
 				req.EXPECT().GetResponseTypes().AnyTimes().Return(Arguments([]string{"code", "token"}))
 				req.EXPECT().GetResponseMode().Return(ResponseModeFragment).AnyTimes()
@@ -300,8 +300,8 @@ func TestWriteAuthorizeError(t *testing.T) {
 			err:                  ErrInvalidRequest.WithDebug("with-debug"),
 			doNotUseLegacyFormat: true,
 			mock: func(rw *MockResponseWriter, req *MockAuthorizeRequester) {
-				req.EXPECT().IsRedirectURIValid().Return(true)
-				req.EXPECT().GetRedirectURI().Return(copyUrl(purls[0]))
+				req.EXPECT().GetRedirectURI().AnyTimes().Return(copyUrl(purls[0]))
+				req.EXPECT().GetClient().Return(&DefaultClient{RedirectURIs: []string{purls[0].String()}})
 				req.EXPECT().GetState().Return("foostate")
 				req.EXPECT().GetResponseTypes().AnyTimes().Return(Arguments([]string{"code", "token"}))
 				req.EXPECT().GetResponseMode().Return(ResponseModeFragment).AnyTimes()
@@ -323,8 +323,8 @@ func TestWriteAuthorizeError(t *testing.T) {
 		{
 			err: ErrInvalidRequest.WithDebug("with-debug"),
 			mock: func(rw *MockResponseWriter, req *MockAuthorizeRequester) {
-				req.EXPECT().IsRedirectURIValid().Return(true)
-				req.EXPECT().GetRedirectURI().Return(copyUrl(purls[1]))
+				req.EXPECT().GetRedirectURI().AnyTimes().Return(copyUrl(purls[1]))
+				req.EXPECT().GetClient().Return(&DefaultClient{RedirectURIs: []string{purls[1].String()}})
 				req.EXPECT().GetState().Return("foostate")
 				req.EXPECT().GetResponseTypes().AnyTimes().Return(Arguments([]string{"code", "token"}))
 				req.EXPECT().GetResponseMode().Return(ResponseModeFragment).AnyTimes()
@@ -344,8 +344,8 @@ func TestWriteAuthorizeError(t *testing.T) {
 			debug: true,
 			err:   ErrInvalidRequest.WithDebug("with-debug"),
 			mock: func(rw *MockResponseWriter, req *MockAuthorizeRequester) {
-				req.EXPECT().IsRedirectURIValid().Return(true)
-				req.EXPECT().GetRedirectURI().Return(copyUrl(purls[1]))
+				req.EXPECT().GetRedirectURI().AnyTimes().Return(copyUrl(purls[1]))
+				req.EXPECT().GetClient().Return(&DefaultClient{RedirectURIs: []string{purls[1].String()}})
 				req.EXPECT().GetState().Return("foostate")
 				req.EXPECT().GetResponseTypes().AnyTimes().Return(Arguments([]string{"code", "token"}))
 				req.EXPECT().GetResponseMode().Return(ResponseModeFragment).AnyTimes()
@@ -365,8 +365,8 @@ func TestWriteAuthorizeError(t *testing.T) {
 			debug: true,
 			err:   ErrInvalidRequest.WithDebug("with-debug"),
 			mock: func(rw *MockResponseWriter, req *MockAuthorizeRequester) {
-				req.EXPECT().IsRedirectURIValid().Return(true)
-				req.EXPECT().GetRedirectURI().Return(copyUrl(purls[1]))
+				req.EXPECT().GetRedirectURI().AnyTimes().Return(copyUrl(purls[1]))
+				req.EXPECT().GetClient().Return(&DefaultClient{RedirectURIs: []string{purls[1].String()}})
 				req.EXPECT().GetState().Return("foostate")
 				req.EXPECT().GetResponseTypes().AnyTimes().Return(Arguments([]string{"id_token"}))
 				req.EXPECT().GetResponseMode().Return(ResponseModeFragment).AnyTimes()
@@ -386,8 +386,8 @@ func TestWriteAuthorizeError(t *testing.T) {
 			debug: true,
 			err:   ErrInvalidRequest.WithDebug("with-debug"),
 			mock: func(rw *MockResponseWriter, req *MockAuthorizeRequester) {
-				req.EXPECT().IsRedirectURIValid().Return(true)
-				req.EXPECT().GetRedirectURI().Return(copyUrl(purls[1]))
+				req.EXPECT().GetRedirectURI().AnyTimes().Return(copyUrl(purls[1]))
+				req.EXPECT().GetClient().Return(&DefaultClient{RedirectURIs: []string{purls[1].String()}})
 				req.EXPECT().GetState().Return("foostate")
 				req.EXPECT().GetResponseTypes().AnyTimes().Return(Arguments([]string{"token"}))
 				req.EXPECT().GetResponseMode().Return(ResponseModeFragment).AnyTimes()
@@ -407,8 +407,8 @@ func TestWriteAuthorizeError(t *testing.T) {
 			debug: true,
 			err:   ErrInvalidRequest.WithDebug("with-debug"),
 			mock: func(rw *MockResponseWriter, req *MockAuthorizeRequester) {
-				req.EXPECT().IsRedirectURIValid().Return(true)
-				req.EXPECT().GetRedirectURI().Return(copyUrl(purls[1]))
+				req.EXPECT().GetRedirectURI().AnyTimes().Return(copyUrl(purls[1]))
+				req.EXPECT().GetClient().Return(&DefaultClient{RedirectURIs: []string{purls[1].String()}})
 				req.EXPECT().GetState().Return("foostate")
 				req.EXPECT().GetResponseTypes().AnyTimes().Return(Arguments([]string{"token"}))
 				req.EXPECT().GetResponseMode().Return(ResponseModeFormPost).Times(2)

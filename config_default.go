@@ -130,9 +130,8 @@ type Config struct {
 	// RedirectSecureChecker is a function that returns true if the provided URL can be securely used as a redirect URL.
 	RedirectSecureChecker func(context.Context, *url.URL) bool
 
-	// RedirectURIMatcher is consulted before the client's registered redirect URIs. It returns true if the
-	// provided URL is an allowed redirect URL for the client even though it is not registered verbatim.
-	RedirectURIMatcher func(context.Context, *url.URL, Client) bool
+	// RedirectURIMatcher is the redirect URI matching strategy. Defaults to DefaultRedirectURIMatcher.
+	RedirectURIMatcher RedirectURIMatcher
 
 	// RefreshTokenScopes defines which OAuth scopes will be given refresh tokens during the authorization code grant exchange. This defaults to "offline" and "offline_access". When set to an empty array, all exchanges will be given refresh tokens.
 	RefreshTokenScopes []string
@@ -433,8 +432,11 @@ func (c *Config) GetRedirectSecureChecker(_ context.Context) func(context.Contex
 	return c.RedirectSecureChecker
 }
 
-// GetRedirectURIMatcher returns the additional redirect URI matcher. Defaults to nil (registered URIs only).
-func (c *Config) GetRedirectURIMatcher(_ context.Context) func(context.Context, *url.URL, Client) bool {
+// GetRedirectURIMatcher returns the redirect URI matching strategy. Defaults to DefaultRedirectURIMatcher.
+func (c *Config) GetRedirectURIMatcher(_ context.Context) RedirectURIMatcher {
+	if c.RedirectURIMatcher == nil {
+		return DefaultRedirectURIMatcher
+	}
 	return c.RedirectURIMatcher
 }
 

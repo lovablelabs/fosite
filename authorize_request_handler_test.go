@@ -15,6 +15,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/ory/x/errorsx"
+
 	. "github.com/ory/fosite"
 	. "github.com/ory/fosite/internal"
 )
@@ -354,8 +356,14 @@ func TestNewAuthorizeRequest(t *testing.T) {
 			conf: &Fosite{Store: store, Config: &Config{
 				ScopeStrategy:            ExactScopeStrategy,
 				AudienceMatchingStrategy: DefaultAudienceMatchingStrategy,
-				RedirectURIMatcher: func(_ context.Context, redirectURI *url.URL, client Client) bool {
-					return client.GetID() == "1234" && redirectURI.Host == "derived.example.com"
+				RedirectURIMatcher: func(_ context.Context, rawurl string, client Client) (*url.URL, error) {
+					if registered, err := MatchRedirectURIWithClientRedirectURIs(rawurl, client); err == nil {
+						return registered, nil
+					}
+					if parsed, err := url.Parse(rawurl); err == nil && client.GetID() == "1234" && parsed.Host == "derived.example.com" {
+						return parsed, nil
+					}
+					return nil, errorsx.WithStack(ErrInvalidRequest.WithHint("The \"redirect_uri\" parameter does not match any of the OAuth 2.0 Client's pre-registered redirect urls."))
 				},
 			}},
 			query: url.Values{
@@ -380,12 +388,12 @@ func TestNewAuthorizeRequest(t *testing.T) {
 		},
 		/* redirect_uri refused by the configured matcher falls back to the registered list */
 		{
-			desc: "redirect_uri refused by the configured RedirectURIMatcher and not registered fails",
+			desc: "redirect_uri refused by the configured RedirectURIMatcher fails",
 			conf: &Fosite{Store: store, Config: &Config{
 				ScopeStrategy:            ExactScopeStrategy,
 				AudienceMatchingStrategy: DefaultAudienceMatchingStrategy,
-				RedirectURIMatcher: func(context.Context, *url.URL, Client) bool {
-					return false
+				RedirectURIMatcher: func(context.Context, string, Client) (*url.URL, error) {
+					return nil, errorsx.WithStack(ErrInvalidRequest.WithHint("The \"redirect_uri\" parameter does not match any of the OAuth 2.0 Client's pre-registered redirect urls."))
 				},
 			}},
 			query: url.Values{

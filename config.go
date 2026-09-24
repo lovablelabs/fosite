@@ -64,12 +64,17 @@ type RedirectSecureCheckerProvider interface {
 	GetRedirectSecureChecker(ctx context.Context) func(context.Context, *url.URL) bool
 }
 
-// RedirectURIMatcherProvider returns the provider for configuring an additional redirect URI matcher.
+// RedirectURIMatcherProvider returns the provider for configuring the redirect URI matching strategy.
 type RedirectURIMatcherProvider interface {
-	// GetRedirectURIMatcher returns a matcher consulted before the client's registered redirect URIs.
-	// A nil matcher or a false result falls back to the exact match against the registered list.
-	GetRedirectURIMatcher(ctx context.Context) func(ctx context.Context, redirectURI *url.URL, client Client) bool
+	// GetRedirectURIMatcher returns the strategy that resolves the redirect URI for an authorize request.
+	// Defaults to DefaultRedirectURIMatcher.
+	GetRedirectURIMatcher(ctx context.Context) RedirectURIMatcher
 }
+
+// RedirectURIMatcher resolves the redirect URI of an authorize request for the given client, in the
+// same contract as MatchRedirectURIWithClientRedirectURIs: rawurl may be empty, and an error means the
+// request must be rejected.
+type RedirectURIMatcher func(ctx context.Context, rawurl string, client Client) (*url.URL, error)
 
 // RefreshTokenScopesProvider returns the provider for configuring the refresh token scopes.
 type RefreshTokenScopesProvider interface {
